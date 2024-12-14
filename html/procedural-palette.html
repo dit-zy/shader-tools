@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>procedural palette</title>
+    <style>
+        body {
+            background-color: rgb(0, 14, 28);
+        }
+
+        .text {
+            color: white;
+        }
+
+        .gap {
+            padding: 16px;
+        }
+
+        td {
+            padding: 0px 10px;
+        }
+
+        canvas {
+            display: block;
+            margin: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div>
+    <table class="text">
+        <tr>
+            <td rowspan="3">a</td>
+            <td>r</td>
+            <td><input id="arl" type="range"/> <input id="arh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>g</td>
+            <td><input id="agl" type="range"/> <input id="agh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td><input id="abl" type="range"/> <input id="abh" type="range"/></td>
+        </tr>
+
+        <tr>
+            <td rowspan="3">b</td>
+            <td>r</td>
+            <td><input id="brl" type="range"/> <input id="brh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>g</td>
+            <td><input id="bgl" type="range"/> <input id="bgh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td><input id="bbl" type="range"/> <input id="bbh" type="range"/></td>
+        </tr>
+
+        <tr>
+            <td rowspan="3">c</td>
+            <td>r</td>
+            <td><input id="crl" type="range"/> <input id="crh" type="range"/> <input id="crc" type="checkbox"/></td>
+        </tr>
+        <tr>
+            <td>g</td>
+            <td><input id="cgl" type="range"/> <input id="cgh" type="range"/> <input id="cgc" type="checkbox"/></td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td><input id="cbl" type="range"/> <input id="cbh" type="range"/> <input id="cbc" type="checkbox"/></td>
+        </tr>
+
+        <tr>
+            <td rowspan="3">d</td>
+            <td>r</td>
+            <td><input id="drl" type="range"/> <input id="drh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>g</td>
+            <td><input id="dgl" type="range"/> <input id="dgh" type="range"/></td>
+        </tr>
+        <tr>
+            <td>b</td>
+            <td><input id="dbl" type="range"/> <input id="dbh" type="range"/></td>
+        </tr>
+    </table>
+</div>
+
+<div>
+    <button id="butt" onclick="redraw()">regen</button>
+</div>
+
+<canvas id="canvas" width="520px" height="56px"></canvas>
+<canvas id="curves" width="520px" height="56px"></canvas>
+
+<div id="params" class="text"></div>
+
+<div class="gap"></div>
+<div class="text">history:</div>
+<canvas id="hist_1" width="520px" height="56px"></canvas>
+<canvas id="hist_2" width="520px" height="56px"></canvas>
+<canvas id="hist_3" width="520px" height="56px"></canvas>
+<canvas id="hist_4" width="520px" height="56px"></canvas>
+<canvas id="hist_5" width="520px" height="56px"></canvas>
+<canvas id="hist_6" width="520px" height="56px"></canvas>
+<canvas id="hist_7" width="520px" height="56px"></canvas>
+<canvas id="hist_8" width="520px" height="56px"></canvas>
+
+<script language="JavaScript">
+    const history = [];
+    const canvases = {};
+    [
+        'canvas',
+        'hist_1',
+        'hist_2',
+        'hist_3',
+        'hist_4',
+        'hist_5',
+        'hist_6',
+        'hist_7',
+        'hist_8',
+        'curves',
+    ].forEach((cid, i) => {
+        const cobj = {}
+        canvases[cid] = cobj
+        cobj.elem = document.getElementById(cid)
+        cobj.ctx = cobj.elem.getContext('2d')
+        cobj.imageData = cobj.ctx.getImageData(0, 0, cobj.elem.width, cobj.elem.height)
+
+        if (cid !== 'curves') {
+            cobj.elem.addEventListener('click', e => {
+                writeToClipboard(getVarString(history[i]))
+            })
+        }
+    })
+
+    const inputs = {};
+    ['a', 'b', 'c', 'd'].forEach(k => {
+        inputs[k] = {};
+        ['r', 'g', 'b'].forEach(c => {
+            inputs[k][c] = {
+                'l': document.getElementById(k + c + 'l'),
+                'h': document.getElementById(k + c + 'h'),
+            }
+            inputs[k][c].l.min = 0
+            inputs[k][c].l.max = k === 'c' ? 256 * 3 : 256
+            inputs[k][c].h.min = 0
+            inputs[k][c].h.max = k === 'c' ? 256 * 3 : 256
+
+            const savedL = sessionStorage.getItem('proc-palette_' + k + c + 'l')
+            const savedH = sessionStorage.getItem('proc-palette_' + k + c + 'h')
+            if (savedL) {
+                inputs[k][c].l.value = savedL
+            }
+            if (savedH) {
+                inputs[k][c].h.value = savedH
+            }
+
+            inputs[k][c].l.addEventListener('change', e => {
+                sessionStorage.setItem('proc-palette_' + k + c + 'l', e.target.value)
+            })
+            inputs[k][c].h.addEventListener('change', e => {
+                sessionStorage.setItem('proc-palette_' + k + c + 'h', e.target.value)
+            })
+        })
+    })
+
+    'rgb'.split('').forEach(c => {
+        const elem = document.getElementById('c' + c + 'c')
+        inputs.c[c].c = elem
+        const savedC = sessionStorage.getItem('proc-palette_' + 'c' + c + 'c')
+        if (savedC === 'true' || savedC === 'false') {
+            elem.checked = savedC === 'true'
+            if (savedC === 'true') {
+                inputs.c[c].l.step = 128
+                inputs.c[c].l.value = sessionStorage.getItem('proc-palette_' + 'c' + c + 'l')
+                inputs.c[c].h.step = 128
+                inputs.c[c].h.value = sessionStorage.getItem('proc-palette_' + 'c' + c + 'h')
+            }
+        }
+        elem.addEventListener('change', e => {
+            sessionStorage.setItem('proc-palette_' + 'c' + c + 'c', e.target.checked)
+            if (e.target.checked) {
+                inputs.c[c].l.step = 128
+                inputs.c[c].h.step = 128
+            } else {
+                inputs.c[c].l.step = 1
+                inputs.c[c].h.step = 1
+            }
+        })
+    });
+
+    function setPixel(imageData, x, y, r, g, b, a = 255) {
+        const data = imageData.data
+        const ix = (y * imageData.width + x) * 4
+        data[ix] = r
+        data[ix + 1] = g
+        data[ix + 2] = b
+        data[ix + 3] = a
+    }
+
+    function clamp(t, m) {
+        const n = m - Math.floor(t * m)
+        if (n < 0) {
+            return 0
+        } else if (m < n) {
+            return m
+        } else {
+            return n
+        }
+    }
+
+    function randomizeVars() {
+        const vars = {}
+        'abcd'.split('').forEach(k => {
+            vars[k] = {}
+            'rgb'.split('').forEach(c => {
+                const minVal = inputs[k][c].l.value / 256
+                const maxVal = inputs[k][c].h.value / 256
+                vars[k][c] = maxVal < minVal ? 0 : minVal + Math.random() * (maxVal - minVal)
+                if (k === 'c' && inputs[k][c].c.checked) {
+                    vars[k][c] = Math.floor(vars[k][c] * 2) / 2
+                }
+            })
+        })
+        return vars;
+    }
+
+    function getVarString(vars) {
+        return '{ ' + 'abcd'.split('').map(k => {
+            const comps = 'rgb'.split('').map(c => {
+                return vars[k][c].toFixed(2)
+            }).join(', ')
+            return '"' + k + '": [' + comps + ']'
+        }).join(', ') + ' }'
+    }
+
+    function writeToClipboard(text) {
+        navigator.clipboard.writeText(text)
+            .then(_ => {
+                console.log(text)
+            });
+    }
+
+    function computeColor(vars, t) {
+        const color = {};
+        'rgb'.split('').forEach(comp => {
+            const a = vars.a[comp]
+            const b = vars.b[comp]
+            const c = vars.c[comp]
+            const d = vars.d[comp]
+            color[comp] = a + b * Math.cos(2 * Math.PI * c * t + d);
+        });
+        return color
+    }
+
+    function drawBorder(imData) {
+        for (let i = 0; i < imData.width; i++) {
+            setPixel(imData, i, 0, 255, 255, 255)
+            setPixel(imData, i, 1, 0, 0, 0)
+            setPixel(imData, i, imData.height - 1, 255, 255, 255)
+            setPixel(imData, i, imData.height - 2, 0, 0, 0)
+        }
+        for (let j = 1; j < imData.height - 1; j++) {
+            setPixel(imData, 0, j, 255, 255, 255)
+            setPixel(imData, 1, j, 0, 0, 0)
+            setPixel(imData, imData.width - 1, j, 255, 255, 255)
+            setPixel(imData, imData.width - 2, j, 0, 0, 0)
+        }
+    }
+
+    function drawCanvas(canvasId, vars) {
+        const cdata = canvases[canvasId]
+        const imData = cdata.imageData
+
+        drawBorder(imData)
+
+        for (let i = 0; i < imData.width - 4; i++) {
+            const color = computeColor(vars, i / (imData.width - 4))
+
+            for (let j = 0; j < imData.height - 4; j++) {
+                setPixel(imData, i + 2, j + 2, 256 * color.r, 256 * color.g, 256 * color.b)
+            }
+        }
+
+        cdata.ctx.putImageData(imData, 0, 0)
+    }
+
+    function redraw() {
+
+        const vars = randomizeVars()
+        const varsStr = getVarString(vars)
+        console.log(varsStr)
+        document.getElementById('params').textContent = varsStr
+        writeToClipboard(varsStr)
+
+        history.unshift(vars)
+        history.pop()
+        drawCanvas('canvas', vars)
+        for (let i = 0; i < 8; i++) {
+            drawCanvas('hist_' + (i + 1), history[i+1])
+        }
+
+        const cdata = canvases['curves']
+        const imData = cdata.imageData
+        drawBorder(imData)
+        for (let i = 0; i < imData.width - 4; i++) {
+            const color = computeColor(vars, i / (imData.width - 4))
+
+            for (let j = 0; j < imData.height - 4; j++) {
+                setPixel(imData, i + 2, j + 2, 0, 0, 0)
+            }
+            setPixel(imData, i + 2, clamp(color.r, imData.height - 4) + 2, 255, 0, 0)
+            setPixel(imData, i + 2, clamp(color.g, imData.height - 4) + 2, 0, 255, 0)
+            setPixel(imData, i + 2, clamp(color.b, imData.height - 4) + 2, 0, 0, 255)
+        }
+
+        cdata.ctx.putImageData(imData, 0, 0)
+    }
+
+    for (let i = 0; i < Object.getOwnPropertyNames(canvases).length - 1; i++) {
+        history.push(randomizeVars())
+    }
+    redraw()
+</script>
+</body>
+</html>

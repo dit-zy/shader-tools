@@ -6,18 +6,57 @@
     <style>
         body {
             background-color: rgb(0, 14, 28);
+            font-family: sans-serif;
         }
 
         .text {
             color: white;
         }
 
+        .intro {
+            width: 32em;
+        }
+
         .gap {
             padding: 16px;
         }
 
+        table {
+            border-style: solid;
+            border-collapse: collapse;
+            border-width: 1px;
+            border-color: white;
+        }
+
+        th {
+            padding: 6px 12px;
+            border-style: solid;
+        }
+
         td {
-            padding: 0px 10px;
+            text-align: center;
+            border-top-style: none;
+            border-bottom-style: none;
+            border-left-style: solid;
+            border-right-style: solid;
+        }
+
+        .row1 {
+            border-top-style: solid;
+        }
+
+        .row2 {
+            border-top-style: dashed;
+            border-bottom-style: dashed;
+            border-color: dimgray;
+        }
+
+        .row3 {
+            border-bottom-style: solid;
+        }
+
+        code {
+            padding-left: 2em;
         }
 
         canvas {
@@ -29,61 +68,168 @@
 <body>
 
 <div>
+    <div class="text intro">
+        <p>
+            this is a quickly thrown together tool to generate parameters for the excellent procedural palette
+            formula described on <a href="https://iquilezles.org/articles/palettes/">inigo quilez's excellent
+            website</a> ^w^
+        </p>
+        <p>
+            the formula for generating a color from the palette is:
+        </p>
+        <code>
+            color(t) = a + b*cos( c*t + d )
+        </code>
+        <p>
+            where a, b, c, and d are the parameters generated below, and t is a floating point input.
+        </p>
+        <p>
+            the gradient displays below show the formula evaluated from t = 0.0 to 1.0, for given values of the
+            parameters.
+        </p>
+    </div>
+    <div class="gap"></div>
     <table class="text">
         <tr>
+            <th>parameter</th>
+            <th>component</th>
+            <th>min - max</th>
+        </tr>
+        <tr class="row1">
             <td rowspan="3">a</td>
             <td>r</td>
-            <td><input id="arl" type="range"/> <input id="arh" type="range"/></td>
+            <td>
+                <input id="arl" type="range"/>
+                <span id="arll"></span>
+                -
+                <span id="arhl"></span>
+                <input id="arh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row2">
             <td>g</td>
-            <td><input id="agl" type="range"/> <input id="agh" type="range"/></td>
+            <td>
+                <input id="agl" type="range"/>
+                <span id="agll"></span>
+                -
+                <span id="aghl"></span>
+                <input id="agh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row3">
             <td>b</td>
-            <td><input id="abl" type="range"/> <input id="abh" type="range"/></td>
+            <td>
+                <input id="abl" type="range"/>
+                <span id="abll"></span>
+                -
+                <span id="abhl"></span>
+                <input id="abh" type="range"/>
+            </td>
         </tr>
 
-        <tr>
+        <tr class="row1">
             <td rowspan="3">b</td>
             <td>r</td>
-            <td><input id="brl" type="range"/> <input id="brh" type="range"/></td>
+            <td>
+                <input id="brl" type="range"/>
+                <span id="brll"></span>
+                -
+                <span id="brhl"></span>
+                <input id="brh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row2">
             <td>g</td>
-            <td><input id="bgl" type="range"/> <input id="bgh" type="range"/></td>
+            <td>
+                <input id="bgl" type="range"/>
+                <span id="bgll"></span>
+                -
+                <span id="bghl"></span>
+                <input id="bgh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row3">
             <td>b</td>
-            <td><input id="bbl" type="range"/> <input id="bbh" type="range"/></td>
+            <td>
+                <input id="bbl" type="range"/>
+                <span id="bbll"></span>
+                -
+                <span id="bbhl"></span>
+                <input id="bbh" type="range"/>
+            </td>
         </tr>
 
-        <tr>
+        <tr class="row1">
             <td rowspan="3">c</td>
             <td>r</td>
-            <td><input id="crl" type="range"/> <input id="crh" type="range"/> <input id="crc" type="checkbox"/></td>
+            <td>
+                <input id="crl" type="range"/>
+                <span id="crll"></span>
+                -
+                <span id="crhl"></span>
+                <input id="crh" type="range"/>
+            </td>
+            <td>
+                <input id="crc" type="checkbox"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row2">
             <td>g</td>
-            <td><input id="cgl" type="range"/> <input id="cgh" type="range"/> <input id="cgc" type="checkbox"/></td>
+            <td>
+                <input id="cgl" type="range"/>
+                <span id="cgll"></span>
+                -
+                <span id="cghl"></span>
+                <input id="cgh" type="range"/>
+            </td>
+            <td>
+                <input id="cgc" type="checkbox"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row3">
             <td>b</td>
-            <td><input id="cbl" type="range"/> <input id="cbh" type="range"/> <input id="cbc" type="checkbox"/></td>
+            <td>
+                <input id="cbl" type="range"/>
+                <span id="cbll"></span>
+                -
+                <span id="cbhl"></span>
+                <input id="cbh" type="range"/>
+            </td>
+            <td>
+                <input id="cbc" type="checkbox"/>
+            </td>
         </tr>
 
-        <tr>
+        <tr class="row1">
             <td rowspan="3">d</td>
             <td>r</td>
-            <td><input id="drl" type="range"/> <input id="drh" type="range"/></td>
+            <td>
+                <input id="drl" type="range"/>
+                <span id="drll"></span>
+                -
+                <span id="drhl"></span>
+                <input id="drh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row2">
             <td>g</td>
-            <td><input id="dgl" type="range"/> <input id="dgh" type="range"/></td>
+            <td>
+                <input id="dgl" type="range"/>
+                <span id="dgll"></span>
+                -
+                <span id="dghl"></span>
+                <input id="dgh" type="range"/>
+            </td>
         </tr>
-        <tr>
+        <tr class="row3">
             <td>b</td>
-            <td><input id="dbl" type="range"/> <input id="dbh" type="range"/></td>
+            <td>
+                <input id="dbl" type="range"/>
+                <span id="dbll"></span>
+                -
+                <span id="dbhl"></span>
+                <input id="dbh" type="range"/>
+            </td>
         </tr>
     </table>
 </div>
@@ -136,33 +282,60 @@
         }
     })
 
-    const inputs = {};
-    ['a', 'b', 'c', 'd'].forEach(k => {
-        inputs[k] = {};
-        ['r', 'g', 'b'].forEach(c => {
-            inputs[k][c] = {
+    const inputs = {}
+    'abcd'.split('').forEach(k => {
+        inputs[k] = {}
+        'rgb'.split('').forEach(c => {
+            const input = {
                 'l': document.getElementById(k + c + 'l'),
+                'll': document.getElementById(k + c + 'll'),
                 'h': document.getElementById(k + c + 'h'),
+                'hl': document.getElementById(k + c + 'hl'),
             }
-            inputs[k][c].l.min = 0
-            inputs[k][c].l.max = k === 'c' ? 256 * 3 : 256
-            inputs[k][c].h.min = 0
-            inputs[k][c].h.max = k === 'c' ? 256 * 3 : 256
+            inputs[k][c] = input
+            input.l.min = 0
+            input.l.max = k === 'c' ? 256 * 3 : 256
+            input.l.value = 0
+            input.h.min = 0
+            input.h.max = k === 'c' ? 256 * 3 : 256
+            input.h.value = 256
+
+            if (k === 'a' || k === 'b') {
+                input.l.value = 128
+                input.h.value = 128
+            }
 
             const savedL = sessionStorage.getItem('proc-palette_' + k + c + 'l')
             const savedH = sessionStorage.getItem('proc-palette_' + k + c + 'h')
             if (savedL) {
-                inputs[k][c].l.value = savedL
+                input.l.value = savedL
             }
             if (savedH) {
-                inputs[k][c].h.value = savedH
+                input.h.value = savedH
             }
 
-            inputs[k][c].l.addEventListener('change', e => {
+            input.ll.textContent = (input.l.value / 256).toFixed(2)
+            input.hl.textContent = (input.h.value / 256).toFixed(2)
+
+            input.l.addEventListener('change', e => {
+                if (Number(input.h.value) < Number(e.target.value)) {
+                    e.target.value = input.h.value
+                }
                 sessionStorage.setItem('proc-palette_' + k + c + 'l', e.target.value)
+                input.ll.textContent = (e.target.value / 256).toFixed(2)
             })
-            inputs[k][c].h.addEventListener('change', e => {
+            input.l.addEventListener('input', e => {
+                input.ll.textContent = (e.target.value / 256).toFixed(2)
+            })
+            input.h.addEventListener('change', e => {
+                if (Number(e.target.value) < Number(input.l.value)) {
+                    e.target.value = input.l.value
+                }
                 sessionStorage.setItem('proc-palette_' + k + c + 'h', e.target.value)
+                input.hl.textContent = (e.target.value / 256).toFixed(2)
+            })
+            input.h.addEventListener('input', e => {
+                input.hl.textContent = (e.target.value / 256).toFixed(2)
             })
         })
     })
@@ -300,7 +473,7 @@
         history.pop()
         drawCanvas('canvas', vars)
         for (let i = 0; i < 8; i++) {
-            drawCanvas('hist_' + (i + 1), history[i+1])
+            drawCanvas('hist_' + (i + 1), history[i + 1])
         }
 
         const cdata = canvases['curves']
